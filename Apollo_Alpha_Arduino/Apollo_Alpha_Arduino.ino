@@ -30,6 +30,7 @@ void setup() {
   BLE_Shield.begin(9600);
   initSD();
   initMP3Player();
+  BLE_Shield.write(4);
 }
 
 void loop() {
@@ -43,11 +44,13 @@ void loop() {
         volume.byte[RIGHT] = 255;
         MP3player.setVolume(volume.byte[LEFT], volume.byte[RIGHT]); //Pushes the new volumes onto the player
         lefty = !lefty;
+        BLE_Shield.write(5);  //Ping the phone so that it knows something played.
       } else {
         volume.byte[LEFT] = 255;
         volume.byte[RIGHT] = 150;
         MP3player.setVolume(volume.byte[LEFT], volume.byte[RIGHT]); //Pushes the new volumes onto the player
         lefty = !lefty;
+        BLE_Shield.write(4);  //Ping the phone so that it knows something played.
       }
       uint8_t result = MP3player.playMP3("Track001.mp3");
       if (result == 0)  { //No error case
