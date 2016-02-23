@@ -21,13 +21,19 @@
 #define VOLUMEDECREMENTAMOUNT 10
 #define VOLUMEINCREASEAMOUNT 5
 #define TESTVOLUME 75
+#define STARTINGFREQ f125HZ
 #define SILENT 255
 
 enum Freqs {    //Make sure this matches up with the dictionary in the central.
   dummy,
+  f125HZ,
+  f250HZ,
   f500HZ,
   f1KHZ,
-  f2KHZ
+  f2KHZ,
+  f3KHZ,
+  f4KHZ,
+  f8KHZ
 };
 
 enum Ears {
@@ -41,12 +47,14 @@ enum IncomingMessages {
   sameFreq,
   nextFreq,
   lastFreq,
+  resetFreq,
   sameVol,
+  resetVol,
   higherVol,
   lowerVol,
   bothEars,
-  leftEar,
-  rightEar,
+  sameEar,
+  newEar,
   testBeep
 };
 
@@ -58,8 +66,8 @@ enum States {
 };
 
 //Instances
-Freqs freq = f500HZ;
-Ears ear;
+Freqs freq = f125HZ;
+Ears ear = rightOnly;
 IncomingMessages message;
 States state = notListening;
 SdFat sd; // Create object to handle SD functions
@@ -103,6 +111,9 @@ void loop() {
           case lastFreq:      //Go back a frequency.
             freq = static_cast<Freqs>(static_cast<int>(freq) - 1);
             break;
+          case resetFreq:
+            freq = STARTINGFREQ;
+            break;
           default:
             Serial.println("Got an out of bounds frequency message.");
             break;
@@ -113,6 +124,9 @@ void loop() {
        case listeningForVol:
           switch(message) {
            case sameVol:
+              break;
+           case resetVol:
+              masterVolume = TESTVOLUME;
               break;
            case higherVol:
               masterVolume = masterVolume - VOLUMEINCREASEAMOUNT;   //Lower numbers are louder, higher numbers are softer
@@ -132,11 +146,14 @@ void loop() {
             case bothEars:
               ear = bothOfThem;
               break;
-            case leftEar:
-              ear = leftOnly;
+            case sameEar: //do nothing
               break;
-            case rightEar:
-              ear = rightOnly;
+            case newEar:
+              if (ear == rightOnly) {
+                ear = leftOnly;
+              }else if (ear == leftOnly) {
+                ear = rightOnly;
+              }
               break;
             default:
               Serial.println("Got an out of bounds ear message.");
