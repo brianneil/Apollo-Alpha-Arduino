@@ -14,12 +14,9 @@
 //Note the highest value that can be sent via the BLE connection is 255
 #define LEFT 0
 #define RIGHT 1
-#define CENTRALSTARTLISTENING 1
-#define BOTHEARS 17
-#define LEFTEAR 27
-#define RIGHTEAR 37
-#define VOLUMEDECREMENTAMOUNT 10
-#define VOLUMEINCREASEAMOUNT 5
+#define STARTLISTENING 1
+#define DIDFIRE 1
+#define SOMETHINGWRONG 0
 #define TESTVOLUME 75
 #define STARTINGFREQ f125HZ
 #define SILENT 255
@@ -37,25 +34,9 @@ enum Freqs {    //Make sure this matches up with the dictionary in the central.
 };
 
 enum Ears {
-  bothOfThem,
-  leftOnly,
   rightOnly
-};
-
-enum IncomingMessages {
-  startListening,
-  sameFreq,
-  nextFreq,
-  lastFreq,
-  resetFreq,
-  sameVol,
-  resetVol,
-  higherVol,
-  lowerVol,
-  bothEars,
-  sameEar,
-  newEar,
-  testBeep
+  leftOnly,
+  bothOfThem
 };
 
 enum States {
@@ -66,9 +47,8 @@ enum States {
 };
 
 //Instances
-Freqs freq = f125HZ;
-Ears ear = rightOnly;
-IncomingMessages message;
+Freqs freq;
+Ears ear;
 States state = notListening;
 SdFat sd; // Create object to handle SD functions
 SFEMP3Shield MP3player; // Create Mp3 library object
@@ -76,7 +56,7 @@ SoftwareSerial BLE_Shield(4, 5); //Needs to use these pins for TX and RX respect
 
 //Globals
 const uint16_t monoMode = 0;  // Mono setting 0 = stereo
-int masterVolume = 70;  //This will store the volume, start it off at pretty loud.
+int masterVolume;  //This will store the volume, start it off at pretty loud.
 
 
 void setup() {
@@ -90,18 +70,20 @@ void loop() {
   if (BLE_Shield.available()) //Something came in on the BLE comms.
   {
     uint8_t message = BLE_Shield.read(); //Take in the reading from the BLE;
+    //Do I need to cast this to an int?
     
     
     switch(state) {
       case notListening:
-        if (message == startListening) {
+        if (message == STARTLISTENING) {
           state = listeningForFreq;
-        } else if (message == testBeep) {
-          TestBeep();
         }
         break;
         
       case listeningForFreq:  //We should be getting in the frequency
+        //Cast the int into a hashvalue for freq and grab the correct frequency
+        
+        
         switch(message) {
           case sameFreq:      //Do nothing. Might be worth putting some bounds checking on these values.
             break;
