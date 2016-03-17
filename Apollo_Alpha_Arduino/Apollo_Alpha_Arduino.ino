@@ -70,15 +70,15 @@ void loop() {
   if (BLE_Shield.available()) //Something came in on the BLE comms.
   {
     uint8_t message = BLE_Shield.read(); //Take in the reading from the BLE;
-    
-    
-    switch(state) {
+
+
+    switch (state) {
       case notListening:
         if (message == STARTLISTENING) {
           state = listeningForFreq;
         }
         break;
-        
+
       case listeningForFreq:  //We should be getting in the frequency
         //Cast the int into a hashvalue for freq and grab the correct frequency
         freq = static_cast<Freqs>(message);   //To do, add some bounds checking so we don't crash.
@@ -89,20 +89,20 @@ void loop() {
         masterVolume = message;
         state = listeningForEar;
         break;
-          
+
       case listeningForEar:
         ear = static_cast<Ears>(message); //To do: Add bounds checking so we don't crash.
         state = notListening;   //Got to the end of the message, go play the tone and send a message to the phone.
         PlayTone();
         SendMessagePlayedTone();
-          
+
     }
   }
 }
 
 void PlayTone() {
   union twobyte volume;  //creates a variable that can has a byte for the left and right ear volumes
-  if(ear == bothOfThem) {
+  if (ear == bothOfThem) {
     volume.byte[LEFT] = masterVolume;
     volume.byte[RIGHT] = masterVolume;
   } else if (ear == leftOnly) {
@@ -114,13 +114,13 @@ void PlayTone() {
   }
 
   MP3player.setVolume(volume.byte[LEFT], volume.byte[RIGHT]);  //Pushes the new volumes onto the player
-  
+
   uint8_t result = MP3player.playTrack(freq);
 }
 
 void SendMessagePlayedTone() {
-  BLE_Shield.write(DIDPLAYTONE);   //Tell the central we played a tone. Note for the future, to send a bunch of messages in a row, add a 50 ms delay between. 
-  
+  BLE_Shield.write(DIDPLAYTONE);   //Tell the central we played a tone. Note for the future, to send a bunch of messages in a row, add a 50 ms delay between.
+
   Serial.print("Just played track ");
   Serial.print(freq);
   Serial.print(" at ");
