@@ -18,17 +18,15 @@
 #define DIDPLAYTONE 1
 #define SOMETHINGWRONG 0
 #define TESTVOLUME 75
-#define STARTINGFREQ f125HZ
+#define STARTINGFREQ f250HZ
 #define SILENT 255
 
 enum Freqs {    //Make sure this matches up with the dictionary in the central.
   dummy,
-  f125HZ,
   f250HZ,
   f500HZ,
   f1KHZ,
   f2KHZ,
-  f3KHZ,
   f4KHZ,
   f8KHZ
 };
